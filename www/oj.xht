@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- FILE   : oj.xht
+     AUTHOR : (C) Copyright 2007 by Peter C. Chapin
+     SUBJECT: Description of the OJ file format. -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+  <head>
+
+    <!-- The title element -->
+    <title>OJ File Format</title>
+
+    <meta name="Author" content="Peter C. Chapin" />
+    <meta name="ROBOTS" content="NOARCHIVE" />
+    <!-- <link rel="stylesheet" href="default.css" type="text/css"/> -->
+
+  </head>
+
+  <body>
+    <h1>OJ File Format</h1>
+    <hr />
+
+    <p>This document describes the format of the "Orange Juice" object files used by the VuPP
+    linker, <a href="fink.xht">Fink</a>. The OJ file format is not specfic to VuPP, but it has
+    been designed with VuPP in mind. In particular, some of the details of OJ files have been
+    purposely left undefined at this time (or can be configured) as a reflection of currently
+    unknown issues in VuPP's design.</p>
+
+    <p>OJ files are plain text. While this is somewhat inefficient in terms of disk space, text
+    files have the advantage of being editable with generic text editors. In addition they are
+    easily read by a wide variety of programming and scripting languages (as well as humans).
+    Tools to manipulate OJ files could be readily written in Perl or Python, for example. Also
+    text files are easy to store and transmit across various platforms.</p>
+
+    <hr />
+    <h2>Memory Location Size Issues</h2>
+
+    <p>The OJ file format makes no a-priori assumptions about the size of each memory location
+    in the final machine. Most microprocessor memories are byte addressable (meaning that every
+    byte in memory has its own address). However, some of VuPP's designs have called for word
+    addressable memory or even double-word addressable memory. OJ files allow for this variation
+    by including a declaration on the size of a memory location. Currently only 8, 16, 32, and
+    64 bit sizes are supported. All OJ files linked into a final program must use the same
+    memory location size.</p>
+
+    <p>Note that the question of data bus size is different than the question of memory location
+    size. The Intel 80386 processor, for example, has byte addressable memory because every byte
+    has a unique address. However, it has a 32 bit data bus. Thus the 80386 can fetch four
+    "different" locations from memory at once. In contrast a supercomputer might have quad-word
+    addressable memory. This means that each time an address is incremented, a new quad-word is
+    accessed. If such a machine had a 64 bit data bus, it could only access one memory location
+    at a time.</p>
+
+    <p>The OJ file format is not concerned with the size of the data bus. Data bus size is an
+    issue for Fink when it generates its output file(s). (See the <a href="fink.xht" >document
+    describing Fink</a> for more information). However, OJ files do need to declare the number
+    of bits in each memory location so the linker can properly compute addresses.</p>
+
+    <p>Another issue has to do with the size of an address relative to the size of a memory
+    location. If addresses are larger than memory locations, then the linker will have to break
+    addresses up so that they are stored in multiple locations. Some processors will require the
+    low part of the address to be stored in the low locations while other processors will
+    require the high part of the address to be stored in the low locations.</p>
+
+    <p>The current definition of the OJ file format does not address this issue. It's not clear
+    to me if this is something for the OJ file format or for the linker. In any case, it won't
+    come up if the size of an address and the size of a memory location are the same (as they
+    are in all VuPP designs I know about).</p>
+
+    <hr />
+    <h2>The Three Tables</h2>
+
+    <p>In addition to the raw object data in the OJ file, each OJ file comes with three tables
+    of information.</p>
+
+    <dl>
+      <dt><b>Relocation Table</b>.</dt>
+      <dd>
+        <p>The assembler does not know the actual address where the object data will be placed
+        in memory. Thus it cannot fill in addresses for jump or call instructions. If an address
+        refers to an object (either code or data) in the same OJ file, then the assembler can
+        specify the offset in the OJ file to the target object. It then becomes the linker's
+        responsiblity to "relocate" that offset to the correct final address.</p>
+
+        <p>The linker concatenates the object data in all the OJ files together. In the case of
+        Fink, the linker will know the absolute starting address of the program. Thus it will
+        discover the absolute starting address of each OJ file as it joins them together.
+        Offsets into each OJ file can then be translated into absolute addresses by merely
+        adding those offsets to the absolute address of the start of the OJ file.</p>
+
+        <p>The relocation table informs Fink of the places in the OJ file where offsets need to
+        be translated into absolute addresses.</p>
+      </dd>
+
+      <dt><b>Publics Table</b>.</dt>
+      <dd>
+        <p>Some symbols in the assembly language file are declared to be "public." Such symbols
+        are available for use in other files. The linker will need to know the names of all the
+        public symbols in each OJ file and the corresponding offset (from which it can calculate
+        an absolute address) into the OJ file for that symbol. The publics table specifies this
+        information.</p>
+      </dd>
+
+      <dt><b>External Reference Table</b>.</dt>
+      <dd>
+        <p>Some symbols in the assembly language file are actually references to public symbols
+        in other files. The assembler does not know what address to use for those symbols since
+        it has no idea where they will be located. The OJ file must contain a listing of all
+        externally referenced symbols and the offsets into object data where those symbols are
+        referenced. Fink will locate the external symbol as a public symbol in some other OJ
+        file, compute the true absolute address to that symbol, and then update all external
+        references accordingly.</p>
+
+        <p>The external reference table specifies where in the OJ file external references are
+        being used.</p>
+      </dd>
+    </dl>
+
+    <hr />
+    <h2>OJ Directives</h2>
+
+    <p>OJ files are organized as lines. Blank lines are ignored. Any material after (and
+    including) a '#' character is treated as a comment and ignored. Spaces, tabs, and form feed
+    characters are treated as white space. Fields on a line are white space delimited and
+    multiple white space characters are treated like a single white space character. Leading and
+    trailing white space on a line is ignored. Although I hope tools will support arbitrarily
+    long lines in OJ files, a tool can declare an OJ file to be ill-formed if it finds a line
+    longer than 128 characters (including comments and white space).</p>
+
+    <p>Each line must begin with an OJ directive. All OJ directives start with a '.' character.
+    Directives are case insensitive. Following the directive there may be other fields. The
+    other fields may or may not be case insensitive, depending on the directive. A description
+    of the directives follows. This description is the definition of OJ file format version
+    1.0.</p>
+
+    <p>With the exception of the .Version directive, the order in which the directives appear is
+    not relevant. With the exceptions of the .Version directive and the .Size directive, all
+    directives can appear multiple times with no restrictions on which directives must appear
+    before others.</p>
+
+    <dl>
+      <dt><b>.Version</b></dt>
+      <dd>
+        <p>The .Version directive <em>must be the first non-comment line in the file</em>!
+        Furthermore, the .Version directive must exist. It's format is</p>
+
+        <pre>
+          .Version Major_Num.Minor_Num
+        </pre>
+
+        <p>Where 'Major_Num' is the major version number of the OJ file format and 'Minor_Num'
+        is the minor version number. For example</p>
+
+        <pre>
+          .Version 1.2
+        </pre>
+
+        <p>would declare the OJ file to have version 1.2 format.</p>
+
+        <p>The purpose of this directive is to allow us to upgrade the definition of the OJ file
+        format and still allow tools that manipulate OJ files to support the older format. In
+        particular, tools could note the version number and then downgrade themselves
+        accordingly. By forcing the .Version directive to be the very first directive in the
+        file, we allow for future formats to use completely different organizational styles. Old
+        programs could reject a new format before becoming confused by things they don't
+        understand.</p>
+      </dd>
+
+      <dt><b>.Size</b></dt>
+      <dd>
+        <p>This directive declares the size of a memory location. Linkers will need this
+        information to compute addresses properly. The format of this directive is</p>
+
+        <pre>
+          .Size Number_Of_Bits
+        </pre>
+
+        <p>where 'Number_Of_Bits' is one of 8, 16, 32, or 64. No other sizes are supported.</p>
+
+        <p>This directive must exist -- there is no default. This directive can only occur once.
+        Every OJ file comprising a program must use the same .Size directive.</p>
+      </dd>
+
+      <dt><b>.Reloc</b></dt>
+      <dd>
+        <p>This directive defines a single entry in the relocation table. The format of this
+        directive is</p>
+
+        <pre>
+          .Reloc Offset
+        </pre>
+
+        <p>where 'Offset' is the offset into the OJ file where the address to be relocated is to
+        be found. The linker will read the target offset from the specified location, add the
+        absolute address of the start of the OJ file to that offset, and then write the target
+        absolute address back into the object data.</p>
+      </dd>
+
+      <dt><b>.Public</b></dt>
+      <dd>
+        <p>This directive defines a single entry in the publics table. The format of this
+        directive is</p>
+
+        <pre>
+          .Public Symbol_Name Offset
+        </pre>
+
+        <p>where 'Symbol_Name' is the name of the public symbol and 'Offset' is the location of
+        the public symbol in the object data. The linker can compute the absolute address of the
+        public symbol by adding the starting address of the OJ file to this offset.</p>
+
+        <p>Public symbols have no arbitrary static limit to their length. They can consist of
+        letters, digits, and the puncuation marks '_', '.', and '$'. They must start with a
+        letter or underscore character. All other puncuation marks are specifically reserved by
+        this standard.</p>
+      </dd>
+
+      <dt><b>.External</b></dt>
+      <dd>
+        <p>This directive defines a single entry in the external reference table. The format of
+        this directive is</p>
+
+        <pre>
+          .External Symbol_Name Offset
+        </pre>
+
+        <p>where 'Symbol_Name' is the name of a public symbol in some other OJ file and 'Offset'
+        is the location in this OJ file where that symbol's absolute address is to be placed.
+        The linker looks up the symbol's address by scanning all the OJ files being linked and
+        then updates the object data accordingly.</p>
+      </dd>
+
+      <dt><b>.OJ</b></dt>
+
+      <dd>
+        <p>This directive specifies the actual object data. The format of this directive is</p>
+
+        <pre>
+          .OJ [ 8Bit_HexNumber [ 8Bit_HexNumber ... ] ]
+        </pre>
+
+        <p>For example</p>
+
+        <pre>
+          .OJ 4D 23 0F 98 F1 0A 22 87
+        </pre>
+
+        <p>The number of eight bit hex numbers that appear with one .OJ directive is not
+        specifically limited (and it could be zero). However, the <em>total</em> number of
+        object bytes in the OJ file must represent an integer number of memory locations as
+        according to the .Size directive. If each memory location contains more than one byte,
+        then the object bytes in the .OJ directives are loaded into the memory locations with
+        the first byte going into the highest portion of the location. (NOTE: This has nothing
+        to do with how multi-byte quantities might be stored into byte addressable memory!)</p>
+
+        <p>The hex digits A-F are not case sensitive in .OJ directives.</p>
+      </dd>
+    </dl>
+
+    <hr />
+    <h2>Summary of Directives</h2>
+
+    <table border="1">
+      <tr>
+        <th>Directive </th>
+        <th>Purpose</th>
+      </tr>
+      <tr>
+        <td>.Version </td>
+        <td>Specify the version of the OJ file</td>
+      </tr>
+      <tr>
+        <td>.Size </td>
+        <td>Specify the size of a memory location</td>
+      </tr>
+      <tr>
+        <td>.Reloc </td>
+        <td>Specify a relocation table element</td>
+      </tr>
+      <tr>
+        <td>.Public </td>
+        <td>Specify a public symbol</td>
+      </tr>
+      <tr>
+        <td>.External </td>
+        <td>Specify external references</td>
+      </tr>
+      <tr>
+        <td>.OJ </td>
+        <td>Raw object data</td>
+      </tr>
+    </table>
+
+    <p>Here is an example of an OJ file</p>
+
+    <pre>
+#
+# Example OJ file.
+#
+.Version 1.0
+.Size    16
+
+.OJ 12 34       # The first memory location has 0x1234
+.OJ 56 78 9A BC DE F0
+.Public Get_NextChar 4
+  # The material starting at offset 2 (words) is the
+  #   beginning of function Get_NextChar(). This would
+  #   be 0x9ABC.
+.OJ 00 00 0F ED
+.External Initialize 4
+  # The word stored at offset 4 (words) needs to be filled
+  #   in with the address of function Initialize(). Notice
+  #   that the assembler has placed zeros in that address
+  #   to server as place holders.
+.OJ 5A A5 00 03
+.Reloc 7
+  # The word stored at offset 7 (words) is really an offset
+  #   into this OJ file. It needs to be replaced with the
+  #   true absolute address of its target word.
+
+</pre>
+
+    <p>Return to the <a href="index.xht">VuPP Home Page</a>.</p>
+
+    <hr />
+    <address>
+&copy; Copyright 2003 by Peter C. Chapin.<br />
+Last Revised: <b>March 12, 2003</b>
+</address>
+  </body>
+</html>

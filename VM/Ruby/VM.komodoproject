@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="0E58EBD7-F064-4CDF-8D87-FF54B74609FE" kpf_version="5" name="VM.komodoproject">
+<file id="4E5870BD-4819-43BF-84AB-0FB674F7A048" idref="0E58EBD7-F064-4CDF-8D87-FF54B74609FE" name="console.rb" url="console.rb">
+</file>
+<file id="777A83EA-936E-4357-8366-CC101043813C" idref="0E58EBD7-F064-4CDF-8D87-FF54B74609FE" name="cpu.rb" url="cpu.rb">
+</file>
+<file id="C0249744-A79E-47C1-9C1B-188B40B8D8B6" idref="0E58EBD7-F064-4CDF-8D87-FF54B74609FE" name="memory.rb" url="memory.rb">
+</file>
+<file id="D065830C-93EA-40F1-8AC7-A9363DB3DE81" idref="0E58EBD7-F064-4CDF-8D87-FF54B74609FE" name="VuPPmemory.rb" url="VuPPmemory.rb">
+</file>
+</project>

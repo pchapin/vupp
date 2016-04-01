@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- FILE   : index.xht
+     AUTHOR : (C) Copyright 2007 by Peter C. Chapin
+     SUBJECT: Main page of VuPP web site.-->
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+  <head>
+
+    <!-- The title element -->
+    <title>The VTC uProcessor Project</title>
+
+    <meta name="Author" content="Peter C. Chapin"/>
+    <meta name="ROBOTS" content="NOARCHIVE"/>
+    <!-- <link rel="stylesheet" href="default.css" type="text/css"/> -->
+
+  </head>
+
+  <body>
+    <h1>The VTC uProcessor Project (VuPP)</h1>
+
+    <hr/>
+    <h2>Overview and History</h2>
+
+    <p>VuPP is a pet project of Peter C. Chapin, a faculty member in the Vermont Technical
+    College <a href="http://www.cis.vtc.edu">Computer Information Systems Department</a>. The
+    intent of this project is to specify, design, and implement a simple microprocessor from
+    scratch. The purpose of this project is to illustrate, in an educational setting, concepts
+    of computer architecture, digital design and fabrication, system programming, compiler
+    design, and various other related topics. It is my hope that VuPP will eventually be useful
+    in a number of classes at VTC both to demonstrate microprocessor concepts in a clear and
+    dramatic way as well as to provide a vehicle for student projects. It is also my hope that
+    VuPP may eventually prove useful to other educational institutions or to individuals
+    interested in learning more about microprocessor systems.</p>
+
+    <ul>
+      <li><a href="iset.xht">VuPP Instruction Set</a></li>
+      <li><a href="oj.xht">OJ File Format</a> (VuPP's native object file format)</li>
+      <li><a href="fink.xht">Fink Documentation</a> (Fink is the VuPP linker)</li>
+    </ul>
+
+    <h2>Downloads</h2>
+
+    <p><i>No downloads are available at this time!</i></p>
+
+    <h2>Compiling VuPP</h2>
+
+    <p>The source code for <a href="https://github.com/pchapin/vupp">VuPP is available on
+    GitHub</a>.</p>
+
+    <p>VuPP actually consists of several subprojects.</p>
+
+    <ul>
+      <li><p><b>VM</b> is a CPU simulator, written in Ruby, that reads VuPP object files (in the
+      OJ format) and "executes" them.</p></li>
+
+      <li><p><b>VAS</b> is an assembler for the VuPP instruction set, written in Perl. It
+      assembles VuPP processor source and outputs an OJ file.</p></li>
+
+      <li><p><b>Fink</b> is an OJ file linker, written in C++.</p></li>
+
+      <li><p><b>Vocal</b> is a custom, simplified Ada-like programming language. The Vocal
+      compiler also outputs OJ files.</p></li>
+    </ul>
+
+    <p>Currently only VM and VAS are in a reasonably usable state. Consult each project folder
+    for details on how to build and use that project.</p>
+
+    <!-- BEGIN signature block -->
+    <hr/>
+    <address>
+      &copy; Copyright 2014 by <a href="mailto:Peter.Chapin@vtc.vsc.edu">Peter C. Chapin</a>.<br/>
+      Last Revised: <b>September 24, 2014</b>
+    </address>
+    <!-- END signature block -->
+  </body>
+</html>

@@ -1,0 +1,154 @@
+;===========================================================================
+; FILE   : monitor.vas
+; SUBJECT: Simple monitor program for a VuPP based system.
+; AUTHOR : VTC^3
+;
+; This file contains a basic monitor program that a simple VuPP based system can execute at boot
+; time. The intention is for this monitor to be burned into ROMs. It initializes the system and
+; then displays a prompt on the serial port. It takes in commands and processes them. The commands
+; are currently very limited in their nature.
+;
+;===========================================================================
+
+;-----------------------------------
+;           Useful Equates
+;-----------------------------------
+
+RAM_START	EQU	1000h	; First word of RAM
+RAM_END		EQU	2000h	; One past end of RAM
+
+; These symbols are for the serial port
+;
+SPORT_LINESTATUS	EQU	0FFFFh	; Line status register.
+SPORT_CHARREADY		EQU	0FFFFh	; Character ready mask.
+SPORT_PORTREADY		EQU	0FFFFh	; Port ready mask.
+SPORT_RXBUFFER		EQU	0FFFFh	; Rx character buffer.
+SPORT_TXBUFFER		EQU	0FFFFh	; Tx character buffer.
+
+	; The PC is initialized to zero at reset.
+	ORG	0000h
+	jmp	start
+
+;-----------------------------
+;           ROM Data
+;-----------------------------
+
+prompt_message:		CR, LF, "-> ", 0
+
+
+;--------------------------------
+;           The Program
+;--------------------------------
+
+start:
+	; Set up a stack pointer.
+	copy	RAM_END, sp
+
+	; The main program is quite simple
+	call	initialize
+@main_loop:
+	; Print the prompt
+	copy	prompt_message, r1
+	call	print_string
+
+	call	get_command
+	call	process_command
+	jmp	@main_loop
+
+
+;------------------------------------------
+;           System Initialization
+;------------------------------------------
+
+initialize:
+	ret
+
+
+;-------------------------------------------------
+;           Prompt User and Get Response
+;-------------------------------------------------
+
+get_command:
+	ret
+
+
+;---------------------------------------
+;           Command Processing
+;---------------------------------------
+
+process_command:
+	ret
+
+
+;--------------------------------------
+;           Utility Functions
+;--------------------------------------
+
+;
+; print_string
+;
+; The following function prints the null terminated string pointed at by r1. No registers are
+; changed.
+;
+print_string:
+	push	r1
+        push    r2
+
+@printing_next:
+	; Is there more to do?
+	cmp	(r1), 0
+	jz	r2, @printing_done
+
+	; Yes. Display one character
+	copy	(r1), r0
+	call	tx_char
+	inc	r1
+	jmp	@printing_next
+
+@printing_done:
+	pop	r2
+        pop     r1
+	ret
+
+;
+; rx_char
+;
+; The following function receives a character from the serial port. It first waits until the port
+; has a character ready and then it returns the character in r0. No other registers are changed.
+; This version of the function has no facility for a time out. If no character arrives it will
+; wait forever.
+;
+rx_char:
+	; Wait for a character to show up.
+@no_char_ready:
+	copy	(SPORT_LINESTATUS), r0
+	and	SPORT_CHARREADY, r0
+	jz	@no_portready
+
+	; Get it.
+	copy	(SPORT_RXBUFFER), r0
+	ret
+
+;
+; tx_char
+;
+; The following function transmits the character in r0 out the serial port. It first waits for the
+; port to be ready in case it is already transmitting something and then it writes the given
+; character into the port.
+;
+tx_char:
+	; Save registers
+	push	r1
+
+	; Wait for the port to be ready.
+@no_portready:
+	copy	(SPORT_LINESTATUS), r1
+	and	SPORT_PORTREADY, r1
+	jz	@no_portready
+
+	; Get it.
+	copy	r0, (SPORT_TXBUFFER)
+
+	; Restore registers and return.
+        pop     r1
+	ret

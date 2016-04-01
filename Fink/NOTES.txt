@@ -1,0 +1,8 @@
+
+NOTES.txt
+=========
+
+The files environ.hpp and str.{hpp,cpp} should really be taken from the Spica C++ project. The
+versions in Spica are probably newer and more reliable. Thus this project should eventually get
+a dependency on Spica.
+

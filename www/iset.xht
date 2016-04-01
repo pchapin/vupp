@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- FILE   : iset.xht
+     AUTHOR : (C) Copyright 2014 by Peter C. Chapin
+     SUBJECT: VuPP instruction set definition. -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+  <head>
+
+    <!-- The title element -->
+    <title>VuPP Instruction Set</title>
+
+    <meta name="Author" content="Peter C. Chapin" />
+    <meta name="ROBOTS" content="NOARCHIVE" />
+    <!-- <link rel="stylesheet" href="default.css" type="text/css"/> -->
+
+  </head>
+
+  <body>
+    <h1>VuPP Instruction Set</h1>
+
+    <hr />
+    <h2>Instructions</h2>
+
+    <p>Here is the instruction set of the VuPP processor (the influence of the Z-80 is obvious).
+    The emphasis is on minimality for the sake of simplifying the implementation. Yet it is also
+    important that the instruction set be flexible enough to make writing real programs
+    reasonably feasible.</p>
+
+    <pre>
+       0. nop                  ; No operation
+       1. copy  &lt;src&gt;, &lt;dst&gt;   ; Copies data from &lt;src&gt; to &lt;dst&gt;
+       2. add   &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; += &lt;src&gt; + Carry_Flag
+       3. sub   &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; -= &lt;src&gt; + Carry_Flag
+       4. cmp   &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; - &lt;src&gt; and sets flags
+       5. and   &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; &amp;= &lt;src&gt;
+       6. or    &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; |= &lt;src&gt;
+       7. xor   &lt;src&gt;, &lt;dst&gt;   ; Computes &lt;dst&gt; ^= &lt;src&gt;
+       8. inc   &lt;dst&gt;          ; Computes &lt;dst&gt;++
+       9. dec   &lt;dst&gt;          ; Computes &lt;dst&gt;--
+      10. shl   &lt;dst&gt;          ; Logically shifts &lt;dst&gt; left one bit
+      11. shr   &lt;dst&gt;          ; Logically shifts &lt;dst&gt; right one bit
+      12. rtl   &lt;dst&gt;          ; Rotates &lt;dst&gt; left one bit
+      13. rtr   &lt;dst&gt;          ; Rotates &lt;dst&gt; right one bit
+      14. call  &lt;src&gt;          ; Calls subroutine at address &lt;src&gt;
+      15. ret                  ; Return from subroutine
+      16. reti                 ; Return from interrupt
+      17. push  &lt;src&gt;          ; Push &lt;src&gt; onto stack
+      18. pop   &lt;dst&gt;          ; Pop &lt;dst&gt; from stack
+      19. jmp   &lt;src&gt;          ; Jumps to instruction at address &lt;src&gt;
+      20. jz    &lt;src&gt;          ; Jumps to &lt;src&gt; if Z Flag zero
+      21. jnz   &lt;src&gt;          ; Jumps to &lt;src&gt; if Z Flag one
+      22. jc    &lt;src&gt;          ; Jumps to &lt;src&gt; if C Flag zero
+      23. jnc   &lt;src&gt;          ; Jumps to &lt;src&gt; if C Flag one
+      24. stc                  ; Sets carry flag
+      25. clc                  ; Clears carry flag
+      26. ei                   ; Enables interrupts
+      27. di                   ; Disables interrupts
+      28. halt                 ; Stops the processor
+    </pre>
+
+    <hr />
+    <h2>Addressing Modes</h2>
+
+    <p>There are four addressing modes.</p>
+
+    <pre>
+      1. Immediate        : The operand follows the instruction.
+      2. Register Direct  : The operand is in a register.
+      3. Indirect         : The address of the operand follows the instruction.
+      4. Register Indirect: The address of the operand is in a register.
+    </pre>
+
+    <p>Some instructions have no operand, some have one operand, and some have two operands. The
+    immediate addressing mode can only be used with a source operand, never with a destination
+    operand. Otherwise any addressing mode can be used for any operand.</p>
+
+    <p>For example, consider the copy instruction (copy):</p>
+
+    <pre>
+      copy &lt;src&gt;, &lt;dst&gt;
+      copy 0x1234, r0      ; Copies the number 0x1234 into register r0.
+      copy r0, r1          ; Copies contents of register r0 into r1.
+      copy (0x1234), r0    ; Copies stuff at location 0x1234 into r0.
+      copy (r0), r1        ; Copies stuff at location with address in r0 into r1.
+    </pre>
+
+    <p>As an example of the flexibility of VuPP addressing modes, these instructions are allowed
+    as well:</p>
+
+    <pre>
+      copy (0x1234), (0x5678)
+      copy 0x1234, (r0)
+      copy (r0), (r1)
+    </pre>
+
+    <p>All sensible combinations are supported. However, the immediate addressing mode on the
+    destination operand is not supported since it doesn't make sense (how can you copy a value
+    into a number?).</p>
+
+    <hr />
+    <h2>Sample Program</h2>
+
+    <p>The following routine computes the sum of a multiword number. The first number is pointed
+    at by r0 and the second number is pointed at by r1. The number of words in the number is
+    contained in r2. The sum is left in the memory space pointed at by r0. No registers are
+    changed by the routine. There is no overflow checking. Notice that the assembler supports
+    '@'-prefixed local labels. The formatting used in this sample is recommended.</p>
+
+    <pre>
+        ORG 0x0000
+Add_Multi:
+        push r0   ; Save registers.
+        push r1
+        push r2
+
+        clc       ; Clear the carry flag initially.
+@add_loop:
+        add  (r1), (r0)
+        inc  r0
+        inc  r1
+        dec  r2
+        jnz  @add_loop
+
+        pop  r2   ; Restore registers before return.
+        pop  r1
+        pop  r0
+        ret
+</pre>
+
+    <p>This program assumes that the inc r0, inc r1, and dec r2 instructions do not affect the C
+    flag. <i>TODO: Document the instruction set more precisely!</i></p>
+
+    <hr />
+    <h2>Instruction Encoding</h2>
+
+    <p>Instructions are encoded in a manner that emphasizes simplicity of implementation. Each
+    opcode is exactly 16 bits. Five bits are used to specify the instruction, allowing a maximum
+    of 32 base instructions. There are four addressing modes requiring two bits to specify and
+    eight registers requiring three bits to specify. Since some of the instructions have two
+    operands, the register select and addressing mode information appears twice in an opcode.
+    Thus:</p>
+
+    <pre>
+      5 bits for the instruction
+      2 bits for the addressing mode of the source
+      3 bits for the source register
+      2 bits for the addressing mode of the destination
+      3 bits for the destination register
+      Total = 15 bits. It fits into a 16 bit instruction word!
+    </pre>
+
+    <p>Thus:</p>
+
+    <pre>
+      15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+       x  i  i  i  i  i sa sa sr sr sr da da dr dr dr
+
+      where i =&gt; instruction code (see numbers above)
+           sa =&gt; source addressing mode code
+           sr =&gt; source register
+           da =&gt; destination addressing mode code
+           dr =&gt; destination register
+            x =&gt; don't care; must be zero
+    </pre>
+
+    <p>The addressing modes are encoded as follows:</p>
+
+    <pre>
+      Mode                   sa/da bits
+      ----                   ----------
+      Immediate              00
+      Register               01
+      Indirect               10
+      Register Indirect      11
+    </pre>
+
+    <p>As an example consider the copy instruction with the five bit code: 00001 (see the
+    numbering above). In that case, the instruction "copy (0x1234), (r5)" would be encoded as
+    follows:</p>
+
+    <pre>
+      15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+       x  0  0  0  0  1  1  0  x  x  x  1  1  1  0  1
+    </pre>
+
+    <p>Note that since the source addressing mode does not require a register, the source
+    register select bits are don't cares. In all cases don't care bits are required to be zero
+    for upward compatibility with future VuPP processors. This yields an opcode of:</p>
+
+    <pre>
+      copy (0x1234), (r5) => 0x061D
+                          => 0x1234
+    </pre>
+
+    <p>The second word is the immediate data required by the source addressing mode. In this
+    case it is the address of the source operand. As a further example consider the following
+    listing of the previously given multiword addition example. The opcodes here were generated
+    with the VAS assembler.</p>
+
+    <pre>
+                       ORG 0x0000
+0000           Add_Multi:
+0000 4500              push r0   ; Save registers.
+0001 4520              push r1
+0002 4540              push r2
+
+0003 6400              clc       ; Clear the carry flag initially.
+0004           @add_loop:
+0004 0B38              add  (r1), (r0)
+0005 2008              inc  r0
+0006 2009              inc  r1
+0007 240A              dec  r2
+0008 54000004          jnz  @add_loop
+
+000A 480A              pop  r2   ; Restore registers before return.
+000B 4809              pop  r1
+000C 4808              pop  r0
+000D 3C00              ret
+</pre>
+
+    <p>It is an important principle that both VuPP memory addresses and memory locations are all
+    16 bits. VuPP is this a "word addressable" machine and not a byte addressable machine.</p>
+
+    <p>Return to the <a href="index.xht">VuPP Home Page</a>.</p>
+
+    <hr />
+    <address>
+&copy; Copyright 2014 by Peter C. Chapin.<br />
+Last Revised: <b>September 27, 2014</b>
+</address>
+  </body>
+</html>

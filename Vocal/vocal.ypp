@@ -1,0 +1,274 @@
+%{
+/****************************************************************************
+FILE      : vocal.ypp
+SUBJECT   : Grammar for the vocal language
+PROGRAMMER: (C) Copyright 2003 by Peter Chapin
+
+Please send comments or bug reports to
+
+     Peter Chapin
+     Vermont Technical College
+     Williston, VT 05495
+     PChapin@vtc.vsc.edu
+****************************************************************************/
+
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include "node-types.h"
+
+extern int yylex();
+extern int yyerror(char *);
+extern int current_line;
+
+std::map<std::string, symbol_attrs> symbol_table;
+
+stmt_node *root_node;
+
+%}
+
+%union {
+  std::string    *stringval;
+  int             numval;
+  expr_node      *ep;
+  stmt_node      *sp;
+};
+
+%token ARRAY
+%token ASSIGN
+%token tBEGIN
+%token ELSE
+%token END
+%token FUNCTION
+%token <stringval> IDENTIFIER
+%token IF
+%token INT
+%token IS
+%token LOOP
+%token LONG
+%token <numval> NUM
+%token <numval> LNUM
+%token OF
+%token RETURN
+%token RETURNS
+%token THEN
+%token WHILE
+
+%token EQ
+%token NE
+%token LE
+%token GE
+
+%token AND
+%token OR
+%token NOT
+
+%type <numval> type_name
+
+%type <numval> declarative_region
+%type <numval> declaration_list
+%type <numval> declaration
+
+%type <sp> function_body
+%type <sp> statement_list
+%type <sp> statement
+%type <sp> assignment_statement
+
+%type <ep> expression
+%type <ep> logical_expression
+%type <ep> relational_expression
+%type <ep> additive_expression
+%type <ep> multiplicative_expression
+%type <ep> simple_expression
+
+%start translation_unit
+
+%%
+translation_unit:
+        function_list
+      ;
+
+function_list:
+        function_list function
+      | function
+      ;
+
+function:
+        FUNCTION function_header IS declarative_region function_body
+        { root_node = $5; // Currently we only grab the function body.
+        }
+      ;
+
+function_header:
+        IDENTIFIER '(' parameter_list ')' RETURNS type_name { /* Do nothing. (Ignorning parameters) */ }
+      | IDENTIFIER '(' ')' RETURNS type_name                { /* Do nothing. */ }
+      ;
+
+parameter_list:
+        parameter_list ';' parameter
+      | parameter
+      ;
+
+parameter:
+        IDENTIFIER ':' type_name               { /* Do nothing. (Ignoring parameters some more) */ }
+      | IDENTIFIER ':' ARRAY OF NUM type_name  { /* Do nothing. */ }
+      ;
+
+type_name:
+        INT  { $$ = tINT; }
+      | LONG { $$ = tLONG; }
+      ;
+
+declarative_region:
+        declaration_list
+      ;
+
+declaration_list:
+        declaration_list declaration
+      | declaration
+      ;
+
+declaration:
+        IDENTIFIER ':' type_name ';' 
+        { 
+	  // Create a structure of the symbol table.
+	  symbol_attrs myattrs;
+          myattrs.vartype = static_cast<symbol_type>($3);
+	  myattrs.num_elements = 0;
+	  // Add to the symbol table (doesn't check for perviously defined).
+	  symbol_table[*($1)] = myattrs; 
+	  delete $1; }
+      | IDENTIFIER ':' ARRAY OF NUM type_name ';'
+	{
+	  // Create a structure of the symbol table.
+	  symbol_attrs myattrs;
+          myattrs.vartype = static_cast<symbol_type>($6 + 2); // Arrays are two elements higher in the enum.
+	  myattrs.num_elements = $5;
+	  // Add to the symbol table (doesn't check for perviously defined).
+	  symbol_table[*($1)] = myattrs; 
+	  delete $1; }
+      ;
+
+function_body:
+        tBEGIN statement_list END { $$ = $2; }
+      ;
+
+statement_list:
+        statement_list statement
+        { $$ = new statementlist_node($1, $2); 
+	   }
+      | statement
+        { $$ = new statementlist_node(NULL, $1);  
+	   }
+      ;
+
+statement:
+        assignment_statement ';'
+        { $$ = $1; }
+      | IF expression THEN statement_list END
+        { $$ = new if_node($2, $4, NULL); 
+	   }
+      | IF expression THEN statement_list ELSE statement_list END
+        { $$ = new if_node($2, $4, $6); 
+	   }
+      | WHILE expression LOOP statement_list END
+        { $$ = new while_node($2, $4); 
+	   }
+      | RETURN expression ';'
+        { $$ = new return_node($2); 
+	   }
+      ;
+
+assignment_statement:
+        IDENTIFIER ASSIGN expression
+        { $$ = new assignment_node(* $1, $3, current_line); delete $1; 
+	   }
+      | IDENTIFIER '[' expression ']' ASSIGN expression
+        { $$ = new arrayassign_node(* $1, $3, $6, current_line); delete $1; 
+	   }
+      ;
+
+expression:
+        logical_expression { $$ = $1; }
+      ;
+
+logical_expression:
+        logical_expression AND relational_expression
+        { $$ = new and_node($1, $3, current_line); 
+	   }
+      | logical_expression OR relational_expression
+        { $$ = new or_node($1, $3, current_line); 
+	   }
+      | relational_expression
+        { $$ = $1; }
+      ;
+
+relational_expression:
+        relational_expression EQ  additive_expression
+        { $$ = new relational_node($1, $3, EQ_TYPE, current_line); 
+	   }
+      | relational_expression NE  additive_expression
+        { $$ = new relational_node($1, $3, NE_TYPE, current_line); 
+	   }
+      | relational_expression '<' additive_expression
+        { $$ = new relational_node($1, $3, LT_TYPE, current_line); 
+	   }
+      | relational_expression '>' additive_expression
+        { $$ = new relational_node($1, $3, GT_TYPE, current_line); 
+	   }
+      | relational_expression LE  additive_expression
+        { $$ = new relational_node($1, $3, LE_TYPE, current_line); 
+	   }
+      | relational_expression GE  additive_expression
+        { $$ = new relational_node($1, $3, GE_TYPE, current_line); 
+	   }
+      | additive_expression
+        { $$ = $1; }
+      ;
+
+additive_expression:
+        additive_expression '+' multiplicative_expression
+        { $$ = new add_node($1, $3, current_line); 
+	   }
+      | additive_expression '-' multiplicative_expression
+        { $$ = new sub_node($1, $3, current_line); 
+	   }
+      | multiplicative_expression
+        { $$ = $1; }
+      ;
+
+multiplicative_expression:
+        multiplicative_expression '*' simple_expression
+        { $$ = new mul_node($1, $3, current_line); 
+	   }
+      | multiplicative_expression '/' simple_expression
+        { $$ = new div_node($1, $3, current_line); 
+	   }
+      | simple_expression
+        { $$ = $1; }
+      ;
+
+simple_expression:
+        NUM
+        { $$ = new num_node($1, tINT, current_line); 
+	   }
+      | LNUM
+	{ $$ = new num_node($1, tLONG, current_line);
+           }
+      | IDENTIFIER
+        { $$ = new id_node(* $1, current_line); delete $1; 
+	   }
+      | IDENTIFIER '[' expression ']'
+        { $$ = new arrayref_node(* $1, $3, current_line); delete $1; 
+	   }
+      | '(' expression ')'
+        { $$ = $2; }
+      ;
+
+%%
+
+int yyerror(char *message)
+{
+  std::cout << "Error [line " << current_line << "]: " << message << "\n";
+  return 0;
+}

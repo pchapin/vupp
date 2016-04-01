@@ -1,0 +1,5 @@
+
+TODO.txt
+========
+
+It would be nice if the Makefile put all the build artifacts into a build directory.

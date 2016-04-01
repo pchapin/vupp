@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- FILE   : fink.xht
+     AUTHOR : (C) Copyright 2007 by Peter C. Chapin
+     SUBJECT: Description of the fink linker. -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+  <head>
+
+    <!-- The title element -->
+    <title>Fink Documentation</title>
+
+    <meta name="Author" content="Peter C. Chapin" />
+    <meta name="ROBOTS" content="NOARCHIVE" />
+    <!-- <link rel="stylesheet" href="default.css" type="text/css"/> -->
+
+  </head>
+
+  <body>
+    <h1>Fink Documentation</h1>
+
+    <hr />
+
+    <h2>Introduction</h2>
+
+    <p>This document describes Fink, the VuPP linker. Fink is actually a fairly general <a
+    href="oj.xht">OJ file</a> linker. The current version of Fink was developed in support of
+    VuPP programming and thus makes some assumptions that may only be true in a VuPP
+    environment. In particular, Fink currently assumes that the size of an address is the same
+    as the size of a memory location. See the <a href="oj.xht" >document describing the OJ file
+    format</a> for more information.</p>
+
+    <h2>Fink Output Files</h2>
+
+    <p>Fink is a command line program. It takes the names of the OJ files to be finked from the
+    command line (default extension of ".oj") and it writes error messages to the error device.
+    Fink also writes informational messages to stdout.</p>
+
+    <p>Normally Fink places the finked output into intel formatted hex files. By default it will
+    derive the name of the hex files from the name of the first OJ file in the list of OJ files
+    to fink. Hex files have an extension of ".hex".</p>
+
+    <p>Fink needs to know the size of the processor's data bus. If the processor has a data bus
+    wider than eight bits, Fink will produce more than one output hex file. Each hex file
+    defines eight bits of data bus and is intended to be burned into an eight bit wide EPROM.
+    Thus, for example, if the data bus was 16 bits, Fink would write every other byte of
+    information into each hex file so that when the final EPROMs were put side by side the data
+    would be in the correct order.</p>
+
+    <p>As a result of this, Fink will only use seven characters (only the DOS version is limited
+    to seven) for the base name of the hex files. The last character in the name will be a
+    digit. For example, if the base name was "MONITOR" and if the processor data bus was
+    double-word in size, Fink would write the files</p>
+
+    <pre>
+MONITOR0.hex
+MONITOR1.hex
+MONITOR2.hex
+MONITOR3.hex
+</pre>
+
+    <p>where MONITOR0.hex would be burned into the least significant EPROM and MONITOR3.hex
+    would be burned into the most significant EPROM. Each EPROM would contain every fourth byte
+    from the original memory image.</p>
+
+    <p>Technically the output of Fink would not really be Intel hex formatted files. This is
+    because the Intel hex format really only makes sense for systems with 8 bit data busses. Hex
+    files contain address information, but the address Fink writes into the hex files are bogus.
+    In particular, Fink <em>always</em> puts addresses in the hex files that reflect offsets
+    into the target EPROM. The addresses in the hex files do not in any way reflect the true
+    addresses of the data in Fink's memory image.</p>
+
+    <h2>Command Line Syntax</h2>
+
+    <p>Fink understands the following command line options. Command line options are not case
+    sensitive (except in the Unix version). Command line options can be introduced using either
+    the '/' or the '-' characters (except in the Unix version which requires the '-' character).
+    The command line options can occur in any order. However, if a command line option occurs
+    more than once, then its last occurance is the one that is used.</p>
+
+    <dl>
+      <dt><b>-s <i>hex_address</i></b></dt>
+      <dd><p>This option defines the starting address of the program. Fink will begin loading
+      the first OJ file at this address. Additional OJ files will be concatenated to the first.
+      If this option does not appear on the command line then the value of 0 is assumed as the
+      default.</p></dd>
+
+      <dt><b>-l <i>databus_size</i></b></dt>
+      <dd><p>This option defines the size of the data bus. It is used by Fink to determin the
+      number of hex files to write. This option has nothing to do with the size of each
+      addressable memory location. That is specified in the <a href="oj.xht">OJ files</a>
+      themselves (and must be the same in all finked OJ files). This option also has nothing to
+      do with the number of bytes in an address. Fink assumes that is the same as the size of
+      each addressable memory location as defined in the OJ files. This option only controls the
+      number of hex files Fink writes.</p>
+
+      <p>Legal values of <i>databus_size</i> are 8, 16, 32, or 64. There is no default so you
+      must provide a value for this option each time you run Fink.</p></dd>
+
+      <dt><b>-n <i>base_name</i></b></dt>
+      <dd><p>This option specified the base name to use on the output hex file(s). By default,
+      Fink uses the name of the first OJ file as the base name. However, this command line
+      option allows you to override that default.</p></dd>
+    </dl>
+
+    <p>Any other command line options will generate an error message.</p>
+
+    <p>Other words on the command line are taken to be the names of OJ files. If there are too
+    many OJ files to put on the command line, you can put the names into a finker response file
+    and direct fink to process the file as if it contained command line arguments. For example,
+    you could do</p>
+
+    <pre>
+      fink /s=4000 /l=16 @filelist.rsp
+    </pre>
+
+    <p>Any command line argument that starts with an '@' is taken to be the name of a file
+    containing more command line arguments. Each command line argument in the response file is
+    on a line by itself with only one command line argument per line. Blank lines in the
+    response file are ignored as is any text after a '#' character.</p>
+
+    <p>Fink allows from more than one response file to be specified on the command line.
+    Furthermore, response files can specify other response files. Fink allows any command line
+    arguments, including options, to be placed in a response file.</p>
+
+    <hr />
+    <h2>Fink Pseudo-Code</h2>
+
+    <p>Here is how Fink works.</p>
+
+    <pre>
+&lt;Analyze the command line. Follow response files. Override defaults
+ for the options and compose an ordered list of OJ file names to process.&gt;
+IF &lt;We don't like what we saw on the command line&gt; THEN
+  &lt;Error!&gt;
+  &lt;Exit&gt;
+END
+
+# Read the OJ files into memory.
+FOR &lt;Each OJ file in the ordered list&gt; LOOP
+
+  &lt;Clear the relocation table&gt;
+
+  &lt;Extract OJ file version number&gt;
+  IF &lt;This we can't handle this version&gt; THEN
+    &lt;Error!&gt;
+    &lt;Exit&gt;
+  END
+  
+  FOR &lt;Each line in the current OJ file&gt; LOOP
+    &lt;Strip comments&gt;
+    IF &lt;The line is blank&gt; THEN CONTINUE END
+
+    SWITCH &lt;On OJ file directive&gt;
+
+      CASE &lt;.Size&gt;:
+        IF &lt;This size is incompatible with that in other files&gt; THEN
+          &lt;Error!&gt;
+          &lt;Exit&gt;
+        END
+        &lt;Record this size&gt;
+        END
+
+      CASE &lt;.Reloc&gt;:
+        &lt;Add entry to relocation table&gt;
+        # Do we try to verify that the relocation is in the OJ file?
+        END
+
+      CASE &lt;.Public&gt;:
+        &lt;Add entry to public table. Compute absolute address&gt;
+        # Do we try to verify that the address is in the OJ file?
+        END
+
+      CASE &lt;.External&gt;:
+        &lt;Add entry to the external table. Compute absolute address
+         of the spot to fix&gt;
+        # Do we try to verify that the reference occurs in the OJ file?
+        END
+
+      CASE &lt;.OJ&gt;:
+        &lt;Add object data to memory image&gt;
+        END
+
+      DEFAULT:
+        &lt;Error! Unknown directive&gt;
+        &lt;Exit&gt;
+        END
+    END
+  END
+
+  &lt;Verify that we have an integer number of memory locations in the OJ file&gt;
+
+  &lt;Scan the relocation table and relocate the new OJ file&gt;
+END
+
+# Fix up all the external references
+FOR &lt;Each entry in the external reference table&gt; LOOP
+  IF &lt;There is no known public symbol for that reference&gt; THEN
+    &lt;Error! Unresolved external reference&gt;
+    &lt;Exit&gt;
+  END
+  &lt;Fixup the reference so that it links to the public symbol&gt;
+END
+
+# Write output
+&lt;Open all output hex files&gt;
+FOR &lt;Each byte in the memory image&gt; LOOP
+  &lt;Write that byte to the appropriate hex file&gt;
+END
+&lt;Close all hex files&gt;
+
+</pre>
+
+    <p>Return to the <a href="index.xht">VuPP Home Page</a>.</p>
+
+    <hr />
+    <address>
+&copy; Copyright 2003 by Peter C. Chapin.<br />
+Last Revised: <b>March 12, 2003</b>
+</address>
+  </body>
+</html>

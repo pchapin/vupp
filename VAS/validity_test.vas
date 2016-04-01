@@ -1,0 +1,235 @@
+###########################################################################
+# FILE          : validity.vas
+# SUBJECT       : Sample VuPP code with valid and invalid instructions.
+# PROGRAMMER    : (C) Copyright 2003 by Samuel Colwell
+#
+# This file contains sample instructions to test the validity checker added to the assembler
+# vas.
+###########################################################################
+
+valid_directives:
+        ; ORG 0x1000
+        ORG 0x0000
+_varname:	DW	0x1234
+_varname2:	DW	890ah
+
+; This is just a quick test to make sure variable names
+; work correctly.
+	cpy	(_varname), (_varname2)
+
+
+valid_instructions:
+	nop
+
+	copy	1234h, r0
+	copy	r1, r0
+	copy	(1234h), r0
+	copy	(r2), r0 
+	copy	1234h, (2345h)
+	copy	r1, (2345h)
+	copy	(1234h), (2345h)
+	copy	(r2), (2345h)
+	copy	1234h, (r0)
+	copy	r1, (r0)
+	copy	(1234h), (r0)
+	copy	(r2), (r0) 
+
+	add	1234h, r0
+	add	r1, r0
+	add	(1234h), r0
+	add	(r2), r0 
+	add	1234h, (2345h)
+	add	r1, (2345h)
+	add	(1234h), (2345h)
+	add	(r2), (2345h)
+	add	1234h, (r0)
+	add	r1, (r0)
+	add	(1234h), (r0)
+	add	(r2), (r0) 
+
+	sub	1234h, r0
+	sub	r1, r0
+	sub	(1234h), r0
+	sub	(r2), r0 
+	sub	1234h, (2345h)
+	sub	r1, (2345h)
+	sub	(1234h), (2345h)
+	sub	(r2), (2345h)
+	sub	1234h, (r0)
+	sub	r1, (r0)
+	sub	(1234h), (r0)
+	sub	(r2), (r0) 
+
+	; Compare is interesting as it allows all addressing modes
+	; in both first and second operands (at least I think it does).
+	cmp	1234h, 1234h
+	cmp	r1, 1234h
+	cmp	(1234h), 2345h
+	cmp	(r2), 1234h
+	cmp	1234h, r0
+	cmp	r1, r0
+	cmp	(1234h), r0
+	cmp	(r2), r0 
+	cmp	1234h, (2345h)
+	cmp	r1, (2345h)
+	cmp	(1234h), (2345h)
+	cmp	(r2), (2345h)
+	cmp	1234h, (r0)
+	cmp	r1, (r0)
+	cmp	(1234h), (r0)
+	cmp	(r2), (r0) 
+
+	and	1234h, r0
+	and	r1, r0
+	and	(1234h), r0
+	and	(r2), r0 
+	and	1234h, (2345h)
+	and	r1, (2345h)
+	and	(1234h), (2345h)
+	and	(r2), (2345h)
+	and	1234h, (r0)
+	and	r1, (r0)
+	and	(1234h), (r0)
+	and	(r2), (r0) 
+
+	or	1234h, r0
+	or	r1, r0
+	or	(1234h), r0
+	or	(r2), r0 
+	or	1234h, (2345h)
+	or	r1, (2345h)
+	or	(1234h), (2345h)
+	or	(r2), (2345h)
+	or	1234h, (r0)
+	or	r1, (r0)
+	or	(1234h), (r0)
+	or	(r2), (r0) 
+
+	xor	1234h, r0
+	xor	r1, r0
+	xor	(1234h), r0
+	xor	(r2), r0 
+	xor	1234h, (2345h)
+	xor	r1, (2345h)
+	xor	(1234h), (2345h)
+	xor	(r2), (2345h)
+	xor	1234h, (r0)
+	xor	r1, (r0)
+	xor	(1234h), (r0)
+	xor	(r2), (r0) 
+
+	inc	r0
+	inc	(1234h)
+	inc	(r2)
+
+	dec	r0
+	dec	(1234h)
+	dec	(r2)
+
+	shl	r0
+	shl	(1234h)
+	shl	(r2)
+
+	shr	r0
+	shr	(1234h)
+	shr	(r2)
+
+	rtl	r0
+	rtl	(1234h)
+	rtl	(r2)
+
+	rtr	r0
+	rtr	(1234h)
+	rtr	(r2)
+
+	call	ret_test
+	call	r0
+	call	(1234h)
+	call	(r2)
+
+ret_test:
+	ret
+
+	reti
+
+	push    1234h
+	push	r0
+	push	(1234h)
+	push	(r2)
+
+	pop	r0
+	pop	(1234h)
+	pop	(r2)
+
+	jmp     1234h
+	jmp	r0
+	jmp	(1234h)
+	jmp	(r2)
+
+	jz      1234h
+	jz	r0
+	jz	(1234h)
+	jz	(r2)
+
+	jnz     1234h
+	jnz	r0
+	jnz	(1234h)
+	jnz	(r2)
+
+	jc      1234h
+	jc	r0
+	jc	(1234h)
+	jc	(r2)
+
+	jnc     1234h
+	jnc	r0
+	jnc	(1234h)
+	jnc	(r2)
+	
+	stc
+	
+	clc
+
+	ei
+
+	di
+
+	halt
+
+invalid_instructions:
+	
+	; These just test a few simple cases that the assembler should
+	; be able to detect.
+
+	; Operand for instr that takes none.
+	nop	1234h
+	nop	r0
+	nop 	(1234h)
+	nop	(r0)
+
+	; Trying to use immediate destination
+	copy	1234h, 1234h
+	copy	r0, 1234h
+	copy	(1234h), 1234h
+	copy	(r0), 1234h
+	
+	pop	1234h
+
+	; Using non-existant register.
+	pop	r8
+
+	; Using non-existant label.
+	jmp	@non_existant_label
+
+	; Unknown instruction
+	silly
+	silly	r0
+	silly	r0, r3
+
+	
+
+	
+
+
+ 
+

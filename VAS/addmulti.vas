@@ -1,0 +1,35 @@
+###########################################################################
+# FILE      : addmulti.vas
+# SUBJECT   : Sample VuPP assembly language code.
+# PROGRAMMER: (C) Copyright 2003 by Peter Chapin
+#
+# This program does multiword addition.
+#
+# Please send comments or bug reports to
+#
+#      Peter Chapin
+#      Vermont Technical College
+#      Williston, VT 05495
+#      PChapin@vtc.vsc.edu
+###########################################################################
+
+        ; ORG 0x1000
+        ORG 0x0000
+
+Add_Multi:
+        push r0   ; Save registers.
+        push r1
+        push r2
+
+        clc       ; Clear the carry flag initially.
+@add_loop:
+        add  (r1), (r0)
+        inc  r0
+        inc  r1
+        dec  r2
+        jnz  @add_loop
+
+        pop  r2   ; Restore registers before return.
+        pop  r1
+        pop  r0
+        ret
