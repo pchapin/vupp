@@ -23,8 +23,8 @@ case class MachineState(
 
 object MachineState {
   object Run extends Enumeration {
-    val Running = Value  // The machine is executing (or could be).
-    val Aborted = Value  // The machine encountered an unrecoverable error.
-    val Halted  = Value  // The machine executed a HALT instruction.
+    val Running: Run.Value = Value  // The machine is executing (or could be).
+    val Aborted: Run.Value = Value  // The machine encountered an unrecoverable error.
+    val Halted : Run.Value = Value  // The machine executed a HALT instruction.
   }
 }
