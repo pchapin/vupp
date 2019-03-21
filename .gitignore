@@ -1,7 +1,4 @@
 
-# Build folders.
-build
-
 # Build artifacts of the Vocal build
 lex.yy.c
 vocal.tab.cpp
@@ -12,5 +9,10 @@ vocalc.exe
 # Open Watcom IDE generated files.
 *.mk
 
-# IntelliJ user-specific customizations.
-workspace.xml
+# SBT related.
+target
+
+# IntelliJ related.
+.idea
+build
+
