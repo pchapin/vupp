@@ -6,7 +6,7 @@ ThisBuild / scalaVersion := "2.12.8"
 
 logBuffered in Test := false
 
-lazy val augusta = (project in file("."))
+lazy val vuppVM = (project in file("."))
   .settings(
     name := "VuPPVM",
     libraryDependencies ++= vuppDeps,
