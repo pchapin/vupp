@@ -135,14 +135,35 @@ object Simulator {
   private def singleStep(currentState: MachineState): MachineState = {
     require(currentState.status == MachineState.Run.Running, "single stepping a stopped machine")
 
-    // TODO: Implement me!
     def getSourceOperand(
       memory   : Map[Int, Int],
       registers: Map[Int, Int],
       sa       : Int,
       sr       : Int,
       pc       : Int,
-      history  : List[String]): (Int, List[String]) = { (0, history) }
+      history  : List[String]): (Int, Int, List[String]) = {
+
+      sa match {
+        case 0 =>
+          // TODO: Check if the memory location is defined.
+          (memory(pc + 1), pc + 1, history)
+
+        case 1 =>
+          // TODO: Check if the register is defined.
+          (registers(sr), pc, history)
+
+        case 2 =>
+          // TODO: Check if the memory locations are defined.
+          (memory(memory(pc + 1)), pc + 1, history)
+
+        case 3 =>
+          // TODO: Check if the register and the memory location are defined.
+          (memory(registers(sr)), pc, history)
+
+        case _ =>
+          (0, pc, "Internal Error: Invalid addressing mode passed to getSourceOperand" :: history)
+      }
+    }
 
     // TODO: Implement me!
     def putDestinationOperand(
@@ -151,7 +172,26 @@ object Simulator {
       registers: Map[Int, Int],
       da       : Int,
       dr       : Int,
-      pc       : Int): (Map[Int, Int], Map[Int, Int]) = { (Map(), Map()) }
+      pc       : Int,
+      history  : List[String]): (Map[Int, Int], Map[Int, Int], Int, List[String]) = {
+
+      da match {
+        case 0 =>
+          (memory, registers, pc, "Internal Error: Invalid use of immediate addressing mode in putDestinationOperand" :: history)
+
+        case 1 =>
+          (memory, registers + (dr -> operand), pc, history)
+
+        case 2 =>
+          (memory + (memory(pc + 1) -> operand), registers, pc + 1, history)
+
+        case 3 =>
+          (memory + (registers(dr) -> operand), registers, pc, history)
+
+        case _ =>
+          (memory, registers, pc, "Internal Error: Invalid addressing mode passed to putDestinationOperand" :: history)
+      }
+    }
 
     val checkedState = checkCurrentOpcode(currentState)
     checkedState.status match {
@@ -166,6 +206,28 @@ object Simulator {
         instruction match {
           case 0 =>  // nop
             MachineState(memory, registers, pc + 1, zf, cf, nf, status, history)
+
+          case 5 =>  // and
+            val (src, pc1, history1) = getSourceOperand(memory, registers, sa, sr, pc,  history )
+            val (dst, _,   history2) = getSourceOperand(memory, registers, da, dr, pc1, history1)
+            val result = src & dst
+            val (newMem, newReg, pc3, history3) =
+              putDestinationOperand(result, memory, registers, da, dr, pc1, history2)
+            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf = false, nf, status, history3)
+
+          case 8 =>  // inc
+            val (src, pc1, history1) = getSourceOperand(memory, registers, da, dr, pc, history)
+            val result = (src + 1) & 0x0000FFFF
+            val (newMem, newReg, pc3, history3) =
+              putDestinationOperand(result, memory, registers, da, dr, pc1, history1)
+            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf = result == 0, nf, status, history3)
+
+          case 22 => // jc
+            val (address, pc1, history1) = getSourceOperand(memory, registers, sa, sr, pc, history)
+            if (cf)
+              MachineState(memory, registers, address, zf, cf, nf, status, history1)
+            else
+              MachineState(memory, registers, pc1 + 1, zf, cf, nf, status, history1)
 
           case 24 => // stc
             MachineState(memory, registers, pc + 1, zf, cf = true, nf, status, history)
