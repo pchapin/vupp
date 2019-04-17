@@ -165,7 +165,6 @@ object Simulator {
       }
     }
 
-    // TODO: Implement me!
     def putDestinationOperand(
       operand  : Int,
       memory   : Map[Int, Int],
