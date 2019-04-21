@@ -63,6 +63,25 @@
     </pre>
 
     <hr />
+    <h2>Instruction Semantics</h2>
+
+    <p>A more complete reference of what the instructions do has yet to be written. However,
+    here are some key issues in the semantics of the instructions:</p>
+
+    <ul>
+      <li>The cpy and jump instructions affect no flags.</li>
+      <li>The inc/dec instructions do not affect the carry flag.</li>
+      <li>The logical instructions do not affect the carry flag.</li>
+      <li>The shift and rotate instructions copy the bit that "falls off" the end into the
+      carry flag.</li>
+      <li>The reti instruction pops both the flags and the pc (in that order).</li>
+    </ul>
+
+    <p>It may be surprising that the inc/dec instructions do not affect the carry flag. However,
+    this is necessary so that multi-precision operations can be implemented (see the sample
+    program below).</p>
+
+    <hr />
     <h2>Addressing Modes</h2>
 
     <p>There are four addressing modes.</p>
@@ -131,8 +150,8 @@ Add_Multi:
         ret
 </pre>
 
-    <p>This program assumes that the inc r0, inc r1, and dec r2 instructions do not affect the C
-    flag. <i>TODO: Document the instruction set more precisely!</i></p>
+    <p>This program assumes that the inc r0, inc r1, and dec r2 instructions do not affect the
+    carry flag. <i>TODO: Document the instruction set more precisely!</i></p>
 
     <hr />
     <h2>Instruction Encoding</h2>
@@ -229,8 +248,8 @@ Add_Multi:
 
     <hr />
     <address>
-&copy; Copyright 2014 by Peter C. Chapin.<br />
-Last Revised: <b>September 27, 2014</b>
-</address>
+      &copy; Copyright 2019 by Peter C. Chapin.<br />
+      Last Revised: <b>April 21, 2019</b>
+    </address>
   </body>
 </html>

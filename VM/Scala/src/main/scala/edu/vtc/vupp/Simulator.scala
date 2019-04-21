@@ -212,14 +212,14 @@ object Simulator {
             val result = src & dst
             val (newMem, newReg, pc3, history3) =
               putDestinationOperand(result, memory, registers, da, dr, pc1, history2)
-            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf = false, nf, status, history3)
+            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf, nf, status, history3)
 
           case 8 =>  // inc
             val (src, pc1, history1) = getSourceOperand(memory, registers, da, dr, pc, history)
             val result = (src + 1) & 0x0000FFFF
             val (newMem, newReg, pc3, history3) =
               putDestinationOperand(result, memory, registers, da, dr, pc1, history1)
-            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf = result == 0, nf, status, history3)
+            MachineState(newMem, newReg, pc3 + 1, zf = result == 0, cf, nf, status, history3)
 
           case 22 => // jc
             val (address, pc1, history1) = getSourceOperand(memory, registers, sa, sr, pc, history)
