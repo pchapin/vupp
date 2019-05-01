@@ -25,4 +25,4 @@ only components of the system are software oriented as described briefly below.
 The www folder contains documentation for the project.
 
 Peter C. Chapin  
-chapin@acm.org  
+chapinp@acm.org  
