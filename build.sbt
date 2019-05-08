@@ -18,9 +18,24 @@ ThisBuild / scalacOptions :=
 
 logBuffered in Test := false
 
+// A master project...
+lazy val vupp = (project in file("."))
+  .settings(
+    name := "VuPP",
+    // libraryDependencies ++= vuppDeps
+  )
+  .dependsOn(fink, llvm, vas, vm, vocal)
+
+
 lazy val fink = (project in file("Fink"))
   .settings(
     name := "Fink"
+    // libraryDependencies ++= vuppDeps
+  )
+
+lazy val llvm = (project in file("LLVM"))
+  .settings(
+    name := "LLVM"
     // libraryDependencies ++= vuppDeps
   )
 
