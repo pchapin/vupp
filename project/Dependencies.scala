@@ -11,5 +11,5 @@ object Dependencies {
   val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
   // Projects
-  val vuppDeps = Seq(scalactic, scalaTest % Test)
+  val vuppVMDeps = Seq(scalactic, scalaTest % Test)
 }
