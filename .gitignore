@@ -13,6 +13,7 @@ vocalc.exe
 target
 
 # IntelliJ related.
+.bsp
 .idea
 build
 

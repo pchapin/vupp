@@ -4,19 +4,18 @@ enablePlugins(Antlr4Plugin)
 
 ThisBuild / organization  := "edu.vtc"
 ThisBuild / version       := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion  := "2.12.8"
+ThisBuild / scalaVersion  := "2.13.8"   // Think about upgrading to Scala 3.1.0. Check libs!
 ThisBuild / scalacOptions :=
-  Seq("-encoding", "UTF-8",
+  Seq("-encoding", "UTF-8", // Encoding of the source files.
       "-feature",
-      "-deprecation",
+      "-deprecation",       // Tell us about deprecated things.
       "-unchecked",
-      "-Ywarn-adapted-args",
+      "-Wunused:nowarn",    // Warn if the nowarn annotation doesn't actually suppress a warning.
+      "-Xsource:3",         // Help us migrate to Scala 3 by forbidding somethings and allowing others.
       "-Ywarn-dead-code",
-      "-Ywarn-infer-any",
-      "-Ywarn-unused-import",
       "-Ywarn-value-discard")
 
-logBuffered in Test := false
+Test / logBuffered := false
 
 // A master project...
 lazy val vupp = (project in file("."))
@@ -33,9 +32,9 @@ lazy val fink = (project in file("Fink"))
     // libraryDependencies ++= vuppDeps
   )
 
-lazy val llvm = (project in file("LLVM"))
+lazy val llvm = (project in file("LLVuPP"))
   .settings(
-    name := "LLVM"
+    name := "LLVuPP"
     // libraryDependencies ++= vuppDeps
   )
 
@@ -56,9 +55,8 @@ lazy val vocal = (project in file("Vocal"))
     name := "Vocal",
     // libraryDependencies ++= vuppDeps
 
-    antlr4Version     in Antlr4 := "4.7.2",
-    antlr4PackageName in Antlr4 := Some("edu.vtc.vupp"),
-    antlr4GenListener in Antlr4 := true,
-    antlr4GenVisitor  in Antlr4 := true
-    //excludeFilter in unmanagedSources := HiddenFileFilter || "*slem*"
+    Antlr4 / antlr4Version     := "4.9.2",
+    Antlr4 / antlr4PackageName := Some("edu.vtc.vupp"),
+    Antlr4 / antlr4GenListener := true,
+    Antlr4 / antlr4GenVisitor  := true
   )

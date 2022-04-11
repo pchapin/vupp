@@ -4,7 +4,7 @@ import sbt._
 object Dependencies {
 
   // Versions
-  lazy val scalaTestVersion = "3.0.5"
+  lazy val scalaTestVersion = "3.2.10"
 
   // Libraries
   val scalactic = "org.scalactic" %% "scalactic" % scalaTestVersion
