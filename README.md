@@ -12,6 +12,10 @@ tools have previous (incomplete) implementations in other languages mentioned he
 + Fink. The linker for the VuPP processor (formerly in C++). The object file format used is a
   custom format for this project. As a future enhancement it might make sense to support one of
   the standard formats.
+  
++ LLVuPP. The LLVM to VuPP code generator. This project is intended to allow any compiler that
+  can generate LLVM assembly language to target VuPP by translatting LLVM assembly language to
+  VuPP assembly language.
 
 + VAS. The assembler for the VuPP processor (formerly in Perl). This project is complete enough
   to be useful, allowing VuPP programs to actuall be created.
@@ -22,8 +26,7 @@ tools have previous (incomplete) implementations in other languages mentioned he
   
 + Vocal. The compiler for the vocal language (formerly in C++). Vocal is a simplified Ada-like
   language. See also the [Augusta](https://github.com/pchapin/augusta) project for a compiler
-  which compiles a more complex Ada-like language into LLVM assembly language. A VuPP code
-  generator for LLVM might be a nice addition to this repository.
+  which compiles a more complex Ada-like language into LLVM assembly language.
 
 The www folder contains documentation for the project.
 

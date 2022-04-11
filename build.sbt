@@ -23,7 +23,7 @@ lazy val vupp = (project in file("."))
     name := "VuPP",
     // libraryDependencies ++= vuppDeps
   )
-  .dependsOn(fink, llvm, vas, vm, vocal)
+  .dependsOn(fink, llvupp, vas, vm, vocal)
 
 
 lazy val fink = (project in file("Fink"))
@@ -32,7 +32,7 @@ lazy val fink = (project in file("Fink"))
     // libraryDependencies ++= vuppDeps
   )
 
-lazy val llvm = (project in file("LLVuPP"))
+lazy val llvupp = (project in file("LLVuPP"))
   .settings(
     name := "LLVuPP"
     // libraryDependencies ++= vuppDeps
