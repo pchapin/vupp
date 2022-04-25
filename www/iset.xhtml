@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <!-- FILE   : iset.xht
-     AUTHOR : (C) Copyright 2014 by Peter C. Chapin
+     AUTHOR : (C) Copyright 2022 by Peter C. Chapin
      SUBJECT: VuPP instruction set definition. -->
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
@@ -26,9 +26,9 @@
     <h2>Instructions</h2>
 
     <p>Here is the instruction set of the VuPP processor (the influence of the Z-80 is obvious).
-    The emphasis is on minimality for the sake of simplifying the implementation. Yet it is also
-    important that the instruction set be flexible enough to make writing real programs
-    reasonably feasible.</p>
+        The emphasis is on minimality for the sake of simplifying the implementation. Yet it is
+        also important that the instruction set be flexible enough to make writing real programs
+        reasonably feasible.</p>
 
     <pre>
        0. nop                  ; No operation
@@ -66,7 +66,7 @@
     <h2>Instruction Semantics</h2>
 
     <p>A more complete reference of what the instructions do has yet to be written. However,
-    here are some key issues in the semantics of the instructions:</p>
+        here are some key issues in the semantics of the instructions:</p>
 
     <ul>
       <li>The cpy and jump instructions affect no flags.</li>
@@ -78,8 +78,8 @@
     </ul>
 
     <p>It may be surprising that the inc/dec instructions do not affect the carry flag. However,
-    this is necessary so that multi-precision operations can be implemented (see the sample
-    program below).</p>
+        this is necessary so that multi-precision operations can be implemented (see the sample
+        program below).</p>
 
     <hr />
     <h2>Addressing Modes</h2>
@@ -94,8 +94,8 @@
     </pre>
 
     <p>Some instructions have no operand, some have one operand, and some have two operands. The
-    immediate addressing mode can only be used with a source operand, never with a destination
-    operand. Otherwise any addressing mode can be used for any operand.</p>
+        immediate addressing mode can only be used with a source operand, never with a destination
+        operand. Otherwise, any addressing mode can be used for any operand.</p>
 
     <p>For example, consider the copy instruction (copy):</p>
 
@@ -108,7 +108,7 @@
     </pre>
 
     <p>As an example of the flexibility of VuPP addressing modes, these instructions are allowed
-    as well:</p>
+        as well:</p>
 
     <pre>
       copy (0x1234), (0x5678)
@@ -117,17 +117,17 @@
     </pre>
 
     <p>All sensible combinations are supported. However, the immediate addressing mode on the
-    destination operand is not supported since it doesn't make sense (how can you copy a value
-    into a number?).</p>
+        destination operand is not supported since it doesn't make sense (how can you copy a
+        value into a number?).</p>
 
     <hr />
     <h2>Sample Program</h2>
 
     <p>The following routine computes the sum of a multiword number. The first number is pointed
-    at by r0 and the second number is pointed at by r1. The number of words in the number is
-    contained in r2. The sum is left in the memory space pointed at by r0. No registers are
-    changed by the routine. There is no overflow checking. Notice that the assembler supports
-    '@'-prefixed local labels. The formatting used in this sample is recommended.</p>
+        at by r0 and the second number is pointed at by r1. The number of words in the number is
+        contained in r2. The sum is left in the memory space pointed at by r0. No registers are
+        changed by the routine. There is no overflow checking. Notice that the assembler supports
+        '@'-prefixed local labels. The formatting used in this sample is recommended.</p>
 
     <pre>
         ORG 0x0000
@@ -151,16 +151,17 @@ Add_Multi:
 </pre>
 
     <p>This program assumes that the inc r0, inc r1, and dec r2 instructions do not affect the
-    carry flag. <i>TODO: Document the instruction set more precisely!</i></p>
+        carry flag. <i>TODO: Document the instruction set more precisely!</i></p>
 
     <hr />
     <h2>Instruction Encoding</h2>
 
     <p>Instructions are encoded in a manner that emphasizes simplicity of implementation. Each
-    opcode is exactly 16 bits. Five bits are used to specify the instruction, allowing a maximum
-    of 32 base instructions. There are four addressing modes requiring two bits to specify and
-    eight registers requiring three bits to specify. Since some of the instructions have two
-    operands, the register select and addressing mode information appears twice in an opcode.
+        opcode is exactly 16 bits. Five bits are used to specify the instruction, allowing a
+        maximum of 32 base instructions. There are four addressing modes requiring two bits to
+        specify and eight registers requiring three bits to specify. Since some instructions
+        have two operands, the register select and addressing mode information appears twice
+        in an opcode.
     Thus:</p>
 
     <pre>
@@ -198,8 +199,8 @@ Add_Multi:
     </pre>
 
     <p>As an example consider the copy instruction with the five bit code: 00001 (see the
-    numbering above). In that case, the instruction "copy (0x1234), (r5)" would be encoded as
-    follows:</p>
+        numbering above). In that case, the instruction "copy (0x1234), (r5)" would be encoded
+        as follows:</p>
 
     <pre>
       15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
@@ -207,8 +208,8 @@ Add_Multi:
     </pre>
 
     <p>Note that since the source addressing mode does not require a register, the source
-    register select bits are don't cares. In all cases don't care bits are required to be zero
-    for upward compatibility with future VuPP processors. This yields an opcode of:</p>
+        register select bits are don't cares. In all cases don't care bits are required to be
+        zero for upward compatibility with future VuPP processors. This yields an opcode of:</p>
 
     <pre>
       copy (0x1234), (r5) => 0x061D
@@ -216,9 +217,9 @@ Add_Multi:
     </pre>
 
     <p>The second word is the immediate data required by the source addressing mode. In this
-    case it is the address of the source operand. As a further example consider the following
-    listing of the previously given multiword addition example. The opcodes here were generated
-    with the VAS assembler.</p>
+        case it is the address of the source operand. As a further example consider the
+        following listing of the previously given multi-word addition example. The opcodes here
+        were generated with the VAS assembler.</p>
 
     <pre>
                        ORG 0x0000
@@ -242,14 +243,14 @@ Add_Multi:
 </pre>
 
     <p>It is an important principle that both VuPP memory addresses and memory locations are all
-    16 bits. VuPP is this a "word addressable" machine and not a byte addressable machine.</p>
+        16 bits. VuPP is thus a "word addressable" machine and not a byte addressable machine.</p>
 
-    <p>Return to the <a href="index.xht">VuPP Home Page</a>.</p>
+    <p>Return to the <a href="index.xhtml">VuPP Home Page</a>.</p>
 
     <hr />
     <address>
-      &copy; Copyright 2019 by Peter C. Chapin.<br />
-      Last Revised: <b>April 21, 2019</b>
+      &copy; Copyright 2022 by Peter C. Chapin.<br />
+      Last Revised: <b>April 25, 2022</b>
     </address>
   </body>
 </html>

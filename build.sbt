@@ -44,7 +44,7 @@ lazy val vas = (project in file("VAS"))
     // libraryDependencies ++= vuppDeps
   )
 
-lazy val vm = (project in file("VM"))
+lazy val vm = (project in file("VuPPVM"))
   .settings(
     name := "VuPPVM",
     libraryDependencies ++= vuppVMDeps
